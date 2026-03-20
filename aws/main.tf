@@ -27,13 +27,13 @@ provider "aws" {
 
 module "api_gateway" {
   source                    = "../modules/api-gateway"
-  name                      = "tech-challenge-api"
-  vpc_id                    = data.aws_vpc.selected.id
-  subnet_ids                = data.aws_subnets.private.ids
-  security_group_ids        = [data.aws_security_group.eks_cluster.id]
-  lb_listener_arn           = data.aws_lb_listener.eks_lb_listener.arn
-  lab_role_arn              = data.aws_iam_role.lab_role.arn
-  # authentication_lambda_arn = data.aws_lambda_function.authentication.arn
-  authorizer_lambda_arn     = data.aws_lambda_function.authorizer.arn
-  environment               = "dev"
+  name                      = var.name
+  vpc_id                    = locals.vpc_id
+  subnet_ids                = locals.subnet_ids
+  security_group_ids        = [locals.security_group_ids]
+  lb_listener_arn           = locals.lb_listener_arn
+  lab_role_arn              = locals.lab_role_arn
+  # authentication_lambda_arn = locals.authentication_lambda_arn
+  authorizer_lambda_arn     = locals.authorizer_lambda_arn
+  environment               = var.environment
 }

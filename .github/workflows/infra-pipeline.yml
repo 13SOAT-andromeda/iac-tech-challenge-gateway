@@ -35,8 +35,34 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         run: terraform init -backend-config="bucket=$AWS_S3_TF_STATE_BUCKET_NAME"
+      
+      - name: Discovery EKS Resources
+        id: discovery
+        run: |
+          # 1. Find VPC ID
+          VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eks-tech-challenge-vpc" --query "Vpcs[0].VpcId" --output text)
+          echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
+          
+          # 2. Find Security Group
+          SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=owned" --query "SecurityGroups[0].GroupId" --output text)
+          if [ "$SG_ID" == "None" ] || [ -z "$SG_ID" ]; then
+            SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=shared" --query "SecurityGroups[0].GroupId" --output text)
+          fi
+          echo "SG_ID=$SG_ID" >> $GITHUB_ENV
+          
+          # 3. Find ALB ARN via Tagging API (most reliable for K8s managed resources)
+          ALB_ARN=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=kubernetes.io/cluster/eks-tech-challenge-cluster,Values=owned --resource-type-filters elasticloadbalancing:loadbalancer --query "ResourceTagMappingList[0].ResourceARN" --output text)
+          
+          # 4. Find Listener ARN (Port 80)
+          LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn $ALB_ARN --query "Listeners[?Port==\`80\`].ListenerArn" --output text)
+          echo "LISTENER_ARN=$LISTENER_ARN" >> $GITHUB_ENV
+
       - name: Terraform Plan
-        run: terraform plan -no-color
+        run: |
+          terraform plan -no-color \
+            -var="vpc_id=$VPC_ID" \
+            -var="security_group_ids=[\"$SG_ID\"]" \
+            -var="lb_listener_arn=$LISTENER_ARN"
 
   terraform-apply:
     name: "Terraform Apply"
@@ -56,5 +82,24 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
       - name: Terraform Init
         run: terraform init -backend-config="bucket=$AWS_S3_TF_STATE_BUCKET_NAME"
+      
+      - name: Discovery EKS Resources
+        id: discovery
+        run: |
+          VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eks-tech-challenge-vpc" --query "Vpcs[0].VpcId" --output text)
+          echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
+          SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=owned" --query "SecurityGroups[0].GroupId" --output text)
+          if [ "$SG_ID" == "None" ] || [ -z "$SG_ID" ]; then
+            SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=shared" --query "SecurityGroups[0].GroupId" --output text)
+          fi
+          echo "SG_ID=$SG_ID" >> $GITHUB_ENV
+          ALB_ARN=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=kubernetes.io/cluster/eks-tech-challenge-cluster,Values=owned --resource-type-filters elasticloadbalancing:loadbalancer --query "ResourceTagMappingList[0].ResourceARN" --output text)
+          LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn $ALB_ARN --query "Listeners[?Port==\`80\`].ListenerArn" --output text)
+          echo "LISTENER_ARN=$LISTENER_ARN" >> $GITHUB_ENV
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply -auto-approve \
+            -var="vpc_id=$VPC_ID" \
+            -var="security_group_ids=[\"$SG_ID\"]" \
+            -var="lb_listener_arn=$LISTENER_ARN"

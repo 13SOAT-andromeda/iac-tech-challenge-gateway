@@ -1,2 +1,53 @@
-# Variables for the AWS deployment
-# Most values are fetched dynamically via data sources in data.tf
+variable "name" {
+  description = "Name for the HTTP API Gateway"
+  type        = string
+  default     = "tech-challenge-api"
+}
+
+variable "vpc_id" {
+  description = "VPC ID where the Load Balancer is located"
+  type        = string
+  default     = ""
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for the VPC Link"
+  type        = list(string)
+  default     = []
+}
+
+variable "security_group_ids" {
+  description = "Security groups for the VPC Link"
+  type        = list(string)
+  default     = []
+}
+
+variable "lb_listener_arn" {
+  description = "ARN of the EKS Load Balancer Listener"
+  type        = string
+  default     = ""
+}
+
+variable "lab_role_arn" {
+  description = "ARN of the IAM LabRole"
+  type        = string
+  default     = ""
+}
+
+# variable "authentication_lambda_arn" {
+#   description = "ARN of the authentication Lambda function"
+#   type        = string
+#   default     = ""
+# }
+
+variable "authorizer_lambda_arn" {
+  description = "ARN of the authorizer Lambda function"
+  type        = string
+  default     = ""
+}
+
+variable "environment" {
+  description = "Environment name (e.g., prod, dev, localstack)"
+  type        = string
+  default     = "dev"
+}
