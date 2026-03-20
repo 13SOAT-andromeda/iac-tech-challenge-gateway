@@ -36,5 +36,5 @@ data "aws_lambda_function" "auth" {
 }
 
 data "aws_lambda_function" "authorizer" {
-  function_name = "tech-challenge-user-authentication" # Using same for now
+  function_name = "tech-challenge-user-authorizer"
 }
