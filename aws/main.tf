@@ -31,9 +31,9 @@ module "api_gateway" {
   vpc_id                    = data.aws_vpc.selected.id
   subnet_ids                = data.aws_subnets.private.ids
   security_group_ids        = [data.aws_security_group.eks_cluster.id]
-  lb_listener_arn           = var.lb_listener_arn
+  lb_listener_arn           = data.aws_lb_listener.eks_lb_listener.arn
   lab_role_arn              = data.aws_iam_role.lab_role.arn
-  authentication_lambda_arn = data.aws_lambda_function.authentication.arn
+  # authentication_lambda_arn = data.aws_lambda_function.authentication.arn
   authorizer_lambda_arn     = data.aws_lambda_function.authorizer.arn
   environment               = "dev"
 }

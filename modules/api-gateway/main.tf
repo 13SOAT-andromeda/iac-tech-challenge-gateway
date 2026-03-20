@@ -56,12 +56,12 @@ resource "aws_apigatewayv2_authorizer" "this" {
 # --- Integrations ---
 
 # 1. /api/login POST -> Authentication Lambda
-resource "aws_apigatewayv2_integration" "login" {
-  api_id           = aws_apigatewayv2_api.this.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authentication_lambda_arn}/invocations"
-  payload_format_version = "2.0"
-}
+# resource "aws_apigatewayv2_integration" "login" {
+#   api_id           = aws_apigatewayv2_api.this.id
+#   integration_type = "AWS_PROXY"
+#   integration_uri  = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authentication_lambda_arn}/invocations"
+#   payload_format_version = "2.0"
+# }
 
 # 2. Private Routes -> ALB via VPC Link
 resource "aws_apigatewayv2_integration" "backend" {
@@ -74,12 +74,12 @@ resource "aws_apigatewayv2_integration" "backend" {
 
 # --- Routes ---
 
-resource "aws_apigatewayv2_route" "login" {
-  api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "POST /api/login"
-  target             = "integrations/${aws_apigatewayv2_integration.login.id}"
-  authorization_type = "NONE"
-}
+# resource "aws_apigatewayv2_route" "login" {
+#   api_id             = aws_apigatewayv2_api.this.id
+#   route_key          = "POST /api/login"
+#   target             = "integrations/${aws_apigatewayv2_integration.login.id}"
+#   authorization_type = "NONE"
+# }
 
 resource "aws_apigatewayv2_route" "private" {
   api_id             = aws_apigatewayv2_api.this.id
@@ -99,10 +99,10 @@ resource "aws_lambda_permission" "authorizer" {
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
 }
 
-resource "aws_lambda_permission" "authentication" {
-  statement_id  = "AllowAPIGatewayInvokeAuthentication"
-  action        = "lambda:InvokeFunction"
-  function_name = var.authentication_lambda_arn
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
-}
+# resource "aws_lambda_permission" "authentication" {
+#   statement_id  = "AllowAPIGatewayInvokeAuthentication"
+#   action        = "lambda:InvokeFunction"
+#   function_name = var.authentication_lambda_arn
+#   principal     = "apigateway.amazonaws.com"
+#   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
+# }
