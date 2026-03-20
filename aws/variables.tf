@@ -22,6 +22,12 @@ variable "security_group_ids" {
   default     = []
 }
 
+variable "lb_tag_name" {
+  description = "Name tag of the EKS Load Balancer"
+  type        = string
+  default     = "k8s-elb-a11292f030362464f9469b1e8e8d582f"
+}
+
 variable "lb_listener_arn" {
   description = "ARN of the EKS Load Balancer Listener"
   type        = string
@@ -34,11 +40,11 @@ variable "lab_role_arn" {
   default     = ""
 }
 
-# variable "authentication_lambda_arn" {
-#   description = "ARN of the authentication Lambda function"
-#   type        = string
-#   default     = ""
-# }
+variable "authentication_lambda_arn" {
+  description = "ARN of the authentication Lambda function"
+  type        = string
+  default     = ""
+}
 
 variable "authorizer_lambda_arn" {
   description = "ARN of the authorizer Lambda function"

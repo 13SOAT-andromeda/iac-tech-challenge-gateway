@@ -28,12 +28,12 @@ provider "aws" {
 module "api_gateway" {
   source                    = "../modules/api-gateway"
   name                      = var.name
-  vpc_id                    = locals.vpc_id
-  subnet_ids                = locals.subnet_ids
-  security_group_ids        = [locals.security_group_ids]
-  lb_listener_arn           = locals.lb_listener_arn
-  lab_role_arn              = locals.lab_role_arn
-  # authentication_lambda_arn = locals.authentication_lambda_arn
-  authorizer_lambda_arn     = locals.authorizer_lambda_arn
+  vpc_id                    = local.vpc_id
+  subnet_ids                = local.subnet_ids
+  security_group_ids        = [local.security_group_ids]
+  lb_listener_arn           = local.lb_listener_arn
+  lab_role_arn              = local.lab_role_arn
+  # authentication_lambda_arn = local.authentication_lambda_arn
+  authorizer_lambda_arn     = local.authorizer_lambda_arn
   environment               = var.environment
 }
