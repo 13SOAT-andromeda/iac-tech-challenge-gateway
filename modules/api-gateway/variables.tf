@@ -29,7 +29,7 @@ variable "lab_role_arn" {
   type        = string
 }
 
-variable "auth_lambda_arn" {
+variable "authentication_lambda_arn" {
   description = "ARN of the authentication Lambda function"
   type        = string
 }

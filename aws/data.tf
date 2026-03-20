@@ -30,8 +30,13 @@ data "aws_security_group" "eks_cluster" {
   }
 }
 
+# Find IAM Role for AWS Academy
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
 # Find Lambda functions
-data "aws_lambda_function" "auth" {
+data "aws_lambda_function" "authentication" {
   function_name = "tech-challenge-user-authentication"
 }
 

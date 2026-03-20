@@ -31,7 +31,7 @@ data "aws_security_group" "eks_cluster" {
 }
 
 # Find Lambda functions
-data "aws_lambda_function" "auth" {
+data "aws_lambda_function" "authentication" {
   function_name = "tech-challenge-user-authentication"
 }
 

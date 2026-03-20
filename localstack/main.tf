@@ -58,14 +58,14 @@ provider "aws" {
 }
 
 module "api_gateway" {
-  source                = "../modules/api-gateway"
-  name                  = "tech-challenge-api-local"
-  vpc_id                = data.aws_vpc.selected.id
-  subnet_ids            = data.aws_subnets.private.ids
-  security_group_ids    = [data.aws_security_group.eks_cluster.id]
-  lb_listener_arn       = "arn:aws:elasticloadbalancing:us-east-1:000000000000:loadbalancer/net/mock-lb/1234567890abcdef"
-  lab_role_arn          = "arn:aws:iam::000000000000:role/eks-local-role"
-  auth_lambda_arn       = data.aws_lambda_function.auth.arn
-  authorizer_lambda_arn = data.aws_lambda_function.authorizer.arn
-  environment           = "localstack"
+  source                    = "../modules/api-gateway"
+  name                      = "tech-challenge-api-local"
+  vpc_id                    = data.aws_vpc.selected.id
+  subnet_ids                = data.aws_subnets.private.ids
+  security_group_ids        = [data.aws_security_group.eks_cluster.id]
+  lb_listener_arn           = "arn:aws:elasticloadbalancing:us-east-1:000000000000:loadbalancer/net/mock-lb/1234567890abcdef"
+  lab_role_arn              = "arn:aws:iam::000000000000:role/eks-local-role"
+  authentication_lambda_arn = data.aws_lambda_function.authentication.arn
+  authorizer_lambda_arn     = data.aws_lambda_function.authorizer.arn
+  environment               = "localstack"
 }
