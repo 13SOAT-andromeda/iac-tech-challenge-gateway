@@ -1,0 +1,16 @@
+.gemini/
+gha-creds-*.json
+
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+terraform.tfvars
+terraform.tfvars.json
+*.tfplan

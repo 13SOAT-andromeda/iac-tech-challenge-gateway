@@ -3,7 +3,7 @@ data "aws_vpc" "selected" {
   count = var.vpc_id == "" ? 1 : 0
   filter {
     name   = "tag:Name"
-    values = ["eks-tech-challenge-vpc"]
+    values = [var.vpc_tag_name]
   }
 }
 
@@ -36,7 +36,7 @@ data "aws_security_group" "eks_cluster" {
     values = [local.vpc_id]
   }
   filter {
-    name   = "tag:kubernetes.io/cluster/eks-tech-challenge-cluster"
+    name   = "tag:kubernetes.io/cluster/${var.cluster_tag_name}"
     values = ["owned", "shared"]
   }
 }
@@ -50,7 +50,7 @@ locals {
 data "aws_lb" "eks_alb" {
   count = var.lb_listener_arn == "" ? 1 : 0
   tags = {
-    "kubernetes.io/cluster/eks-tech-challenge-cluster" = "owned"
+    "kubernetes.io/cluster/${var.cluster_tag_name}" = "owned"
   }
 }
 

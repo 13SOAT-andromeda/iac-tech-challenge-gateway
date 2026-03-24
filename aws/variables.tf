@@ -52,6 +52,18 @@ variable "authorizer_lambda_arn" {
   default     = ""
 }
 
+variable "vpc_tag_name" {
+  description = "Name tag of the VPC"
+  type        = string
+  default     = "eks-tech-challenge-vpc"
+}
+
+variable "cluster_tag_name" {
+  description = "Tag name used to identify EKS resources"
+  type        = string
+  default     = "eks-tech-challenge"
+}
+
 variable "environment" {
   description = "Environment name (e.g., prod, dev, localstack)"
   type        = string
