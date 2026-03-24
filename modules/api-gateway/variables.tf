@@ -29,10 +29,10 @@ variable "lab_role_arn" {
   type        = string
 }
 
-# variable "authentication_lambda_arn" {
-#   description = "ARN of the authentication Lambda function"
-#   type        = string
-# }
+variable "authentication_lambda_arn" {
+  description = "ARN of the authentication Lambda function"
+  type        = string
+}
 
 variable "authorizer_lambda_arn" {
   description = "ARN of the authorizer Lambda function"

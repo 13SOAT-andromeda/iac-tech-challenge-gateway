@@ -78,6 +78,16 @@ locals {
   lab_role_arn = var.lab_role_arn != "" ? var.lab_role_arn : try(data.aws_iam_role.lab_role[0].arn, "")
 }
 
+# Find Lambda functions
+data "aws_lambda_function" "authentication" {
+  count         = var.authentication_lambda_arn == "" ? 1 : 0
+  function_name = "tech-challenge-user-authentication"
+}
+
+locals {
+  authentication_lambda_arn = var.authentication_lambda_arn != "" ? var.authentication_lambda_arn : try(data.aws_lambda_function.authentication[0].arn, "")
+}
+
 data "aws_lambda_function" "authorizer" {
   count         = var.authorizer_lambda_arn == "" ? 1 : 0
   function_name = "tech-challenge-user-authorizer"
