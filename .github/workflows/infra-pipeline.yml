@@ -36,61 +36,8 @@ jobs:
       - name: Terraform Init
         run: terraform init -backend-config="bucket=$AWS_S3_TF_STATE_BUCKET_NAME"
       
-      - name: Discovery EKS Resources
-        id: discovery
-        run: |
-          # 1. Find VPC ID
-          VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eks-tech-challenge-vpc" --query "Vpcs[0].VpcId" --output text)
-          if [ "$VPC_ID" == "None" ] || [ -z "$VPC_ID" ]; then
-            echo "Error: VPC not found"
-            exit 1
-          fi
-          echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
-          
-          # 2. Find Security Group using the provided cluster tag
-          SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=owned" --query "SecurityGroups[0].GroupId" --output text)
-          if [ "$SG_ID" == "None" ] || [ -z "$SG_ID" ]; then
-            SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=shared" --query "SecurityGroups[0].GroupId" --output text)
-          fi
-          echo "SG_ID=$SG_ID" >> $GITHUB_ENV
-          
-          # 3. Find ALB ARN by searching for the long identifier
-          # Correcting the query to ensure it returns a valid ARN or fails
-          ALB_ARN=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerArn, 'a11292f030362464f9469b1e8e8d582f')].LoadBalancerArn" --output text)
-          
-          # Handle potential multiple results or "None"
-          ALB_ARN=$(echo "$ALB_ARN" | awk '{print $1}')
-
-          if [ "$ALB_ARN" == "None" ] || [ -z "$ALB_ARN" ]; then
-            echo "Error: ALB identifier 'a11292f030362464f9469b1e8e8d582f' not found in VPC $VPC_ID"
-            # Fallback: search for ANY ALB in that VPC as a last resort
-            ALB_ARN=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?VpcId=='$VPC_ID'].LoadBalancerArn" --output text | awk '{print $1}')
-          fi
-
-          if [ "$ALB_ARN" == "None" ] || [ -z "$ALB_ARN" ]; then
-            echo "Error: No ALB found in VPC $VPC_ID"
-            exit 1
-          fi
-          echo "ALB_ARN=$ALB_ARN" >> $GITHUB_ENV
-
-          # 4. Find Listener ARN (Port 80)
-          LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn "$ALB_ARN" --query "Listeners[?Port==\`80\`].ListenerArn" --output text)
-          
-          # Ensure only one Listener ARN is captured
-          LISTENER_ARN=$(echo "$LISTENER_ARN" | awk '{print $1}')
-
-          if [ "$LISTENER_ARN" == "None" ] || [ -z "$LISTENER_ARN" ]; then
-            echo "Error: Listener not found on Port 80 for ALB $ALB_ARN"
-            exit 1
-          fi
-          echo "LISTENER_ARN=$LISTENER_ARN" >> $GITHUB_ENV
-
       - name: Terraform Plan
-        run: |
-          terraform plan -no-color \
-            -var="vpc_id=$VPC_ID" \
-            -var="security_group_ids=[\"$SG_ID\"]" \
-            -var="lb_listener_arn=$LISTENER_ARN"
+        run: terraform plan -no-color
 
   terraform-apply:
     name: "Terraform Apply"
@@ -111,30 +58,5 @@ jobs:
       - name: Terraform Init
         run: terraform init -backend-config="bucket=$AWS_S3_TF_STATE_BUCKET_NAME"
       
-      - name: Discovery EKS Resources
-        id: discovery
-        run: |
-          VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=eks-tech-challenge-vpc" --query "Vpcs[0].VpcId" --output text)
-          echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
-          
-          SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=owned" --query "SecurityGroups[0].GroupId" --output text)
-          if [ "$SG_ID" == "None" ] || [ -z "$SG_ID" ]; then
-            SG_ID=$(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:kubernetes.io/cluster/eks-tech-challenge-cluster,Values=shared" --query "SecurityGroups[0].GroupId" --output text)
-          fi
-          echo "SG_ID=$SG_ID" >> $GITHUB_ENV
-          
-          ALB_ARN=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerArn, 'a11292f030362464f9469b1e8e8d582f')].LoadBalancerArn" --output text | awk '{print $1}')
-          if [ "$ALB_ARN" == "None" ] || [ -z "$ALB_ARN" ]; then
-            ALB_ARN=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?VpcId=='$VPC_ID'].LoadBalancerArn" --output text | awk '{print $1}')
-          fi
-          echo "ALB_ARN=$ALB_ARN" >> $GITHUB_ENV
-          
-          LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn "$ALB_ARN" --query "Listeners[?Port==\`80\`].ListenerArn" --output text | awk '{print $1}')
-          echo "LISTENER_ARN=$LISTENER_ARN" >> $GITHUB_ENV
-
       - name: Terraform Apply
-        run: |
-          terraform apply -auto-approve \
-            -var="vpc_id=$VPC_ID" \
-            -var="security_group_ids=[\"$SG_ID\"]" \
-            -var="lb_listener_arn=$LISTENER_ARN"
+        run: terraform apply -auto-approve

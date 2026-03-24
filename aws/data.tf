@@ -35,14 +35,17 @@ data "aws_security_group" "eks_cluster" {
     name   = "vpc-id"
     values = [local.vpc_id]
   }
+  # Discovery using cluster name tag which is consistent in EKS
   filter {
-    name   = "tag:kubernetes.io/cluster/${var.cluster_tag_name}"
-    values = ["owned", "shared"]
+    name   = "tag:aws:eks:cluster-name"
+    values = [var.cluster_tag_name]
   }
 }
 
 locals {
-  security_group_ids = ["sg-052b688d65b247624"]
+  # We try to use the provided variable, or the discovered security group ID
+  # Filtering for non-empty and non-"None" values to ensure robustness
+  security_group_ids = [for s in (length(var.security_group_ids) > 0 ? var.security_group_ids : try([data.aws_security_group.eks_cluster[0].id], [])) : s if s != "None" && s != ""]
 }
 
 # Find the EKS Load Balancer (ALB) by Tag
@@ -74,16 +77,6 @@ data "aws_iam_role" "lab_role" {
 locals {
   lab_role_arn = var.lab_role_arn != "" ? var.lab_role_arn : try(data.aws_iam_role.lab_role[0].arn, "")
 }
-
-# Find Lambda functions
-# data "aws_lambda_function" "authentication" {
-#   count         = var.authentication_lambda_arn == "" ? 1 : 0
-#   function_name = "tech-challenge-user-authentication"
-# }
-
-# locals {
-#   authentication_lambda_arn = var.authentication_lambda_arn != "" ? var.authentication_lambda_arn : try(data.aws_lambda_function.authentication[0].arn, "")
-# }
 
 data "aws_lambda_function" "authorizer" {
   count         = var.authorizer_lambda_arn == "" ? 1 : 0
