@@ -19,7 +19,7 @@ variable "subnet_ids" {
 variable "security_group_ids" {
   description = "Security groups for the VPC Link"
   type        = list(string)
-  default     = []
+  default     = ["sg-052b688d65b247624"]
 }
 
 variable "lb_tag_name" {
