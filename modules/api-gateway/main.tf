@@ -110,7 +110,7 @@ resource "aws_apigatewayv2_route" "authorize" {
   api_id             = aws_apigatewayv2_api.this.id
   route_key          = "ANY /api/authorize"
   target             = "integrations/${aws_apigatewayv2_integration.authorizer.id}"
-  authorization_type = "CUSTOM"
+  authorization_type = "NONE"
   authorizer_id      = aws_apigatewayv2_authorizer.this.id
 }
 
