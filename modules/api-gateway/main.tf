@@ -63,7 +63,15 @@ resource "aws_apigatewayv2_integration" "authentication" {
   payload_format_version = "2.0"
 }
 
-# 2. Private Routes -> ALB via VPC Link
+# 2. Authorizer Lambda (authorize endpoint)
+resource "aws_apigatewayv2_integration" "authorizer" {
+  api_id                 = aws_apigatewayv2_api.this.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authorizer_lambda_arn}/invocations"
+  payload_format_version = "2.0"
+}
+
+# 3. Private Routes -> ALB via VPC Link
 resource "aws_apigatewayv2_integration" "backend" {
   api_id             = aws_apigatewayv2_api.this.id
   integration_type   = "HTTP_PROXY"
@@ -98,6 +106,14 @@ resource "aws_apigatewayv2_route" "sessions_logout" {
   authorization_type = "NONE"
 }
 
+resource "aws_apigatewayv2_route" "authorize" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "ANY /api/authorize"
+  target             = "integrations/${aws_apigatewayv2_integration.authorizer.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.this.id
+}
+
 resource "aws_apigatewayv2_route" "private" {
   api_id             = aws_apigatewayv2_api.this.id
   route_key          = "ANY /api/{proxy+}"
@@ -107,14 +123,6 @@ resource "aws_apigatewayv2_route" "private" {
 }
 
 # --- Lambda Permission ---
-
-resource "aws_lambda_permission" "authorizer" {
-  statement_id  = "AllowAPIGatewayInvokeAuthorizer"
-  action        = "lambda:InvokeFunction"
-  function_name = var.authorizer_lambda_arn
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
-}
 
 resource "aws_lambda_permission" "authentication" {
   statement_id  = "AllowAPIGatewayInvokeAuthentication"
