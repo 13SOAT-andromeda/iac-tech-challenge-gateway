@@ -13,7 +13,7 @@ resource "aws_apigatewayv2_stage" "this" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gw.arn
-    format          = jsonencode({
+    format = jsonencode({
       requestId               = "$context.requestId"
       sourceIp                = "$context.identity.sourceIp"
       requestTime             = "$context.requestTime"
@@ -44,41 +44,57 @@ resource "aws_apigatewayv2_vpc_link" "this" {
 # --- Authorizer: Lambda Token Authorizer ---
 
 resource "aws_apigatewayv2_authorizer" "this" {
-  api_id                           = aws_apigatewayv2_api.this.id
-  authorizer_type                  = "REQUEST"
-  authorizer_uri                   = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authorizer_lambda_arn}/invocations"
-  name                             = "tech-challenge-authorizer"
-  identity_sources                 = ["$request.header.Authorization"]
+  api_id                            = aws_apigatewayv2_api.this.id
+  authorizer_type                   = "REQUEST"
+  authorizer_uri                    = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authorizer_lambda_arn}/invocations"
+  name                              = "tech-challenge-authorizer"
+  identity_sources                  = ["$request.header.Authorization"]
   authorizer_payload_format_version = "2.0"
-  enable_simple_responses          = true
+  enable_simple_responses           = true
 }
 
 # --- Integrations ---
 
-# 1. /api/login POST -> Authentication Lambda
-resource "aws_apigatewayv2_integration" "login" {
-  api_id           = aws_apigatewayv2_api.this.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authentication_lambda_arn}/invocations"
-  payload_format_version = "2.0"
+# 1. Authentication Lambda (sessions)
+resource "aws_apigatewayv2_integration" "authentication" {
+  api_id                 = aws_apigatewayv2_api.this.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authentication_lambda_arn}/invocations"
+  payload_format_version = "1.0"
 }
 
 # 2. Private Routes -> ALB via VPC Link
 resource "aws_apigatewayv2_integration" "backend" {
-  api_id           = aws_apigatewayv2_api.this.id
-  integration_type = "HTTP_PROXY"
-  integration_uri  = var.lb_listener_arn
+  api_id             = aws_apigatewayv2_api.this.id
+  integration_type   = "HTTP_PROXY"
+  integration_uri    = var.lb_listener_arn
   integration_method = "ANY"
-  connection_type  = "VPC_LINK"
-  connection_id    = aws_apigatewayv2_vpc_link.this.id
+  connection_type    = "VPC_LINK"
+  connection_id      = aws_apigatewayv2_vpc_link.this.id
 }
 
 # --- Routes ---
 
-resource "aws_apigatewayv2_route" "login" {
+# Rotas públicas da Lambda de autenticação (sem authorizer)
+# Rotas mais específicas têm precedência sobre ANY /api/{proxy+}
+resource "aws_apigatewayv2_route" "sessions_login" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "POST /api/login"
-  target             = "integrations/${aws_apigatewayv2_integration.login.id}"
+  route_key          = "POST /api/sessions"
+  target             = "integrations/${aws_apigatewayv2_integration.authentication.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "sessions_refresh" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "POST /api/sessions/refresh"
+  target             = "integrations/${aws_apigatewayv2_integration.authentication.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "sessions_logout" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "DELETE /api/sessions/logout"
+  target             = "integrations/${aws_apigatewayv2_integration.authentication.id}"
   authorization_type = "NONE"
 }
 
