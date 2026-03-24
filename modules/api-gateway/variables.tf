@@ -1,7 +1,7 @@
 variable "name" {
   description = "Name for the HTTP API Gateway"
   type        = string
-  default     = "tech-challenge-api"
+  default     = "eks-tech-challenge-vpc"
 }
 
 variable "vpc_id" {
