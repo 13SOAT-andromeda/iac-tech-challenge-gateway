@@ -42,7 +42,7 @@ data "aws_security_group" "eks_cluster" {
 }
 
 locals {
-  security_group_ids = length(var.security_group_ids) > 0 ? var.security_group_ids : try(data.aws_security_group.eks_cluster[0].id, "")
+  security_group_ids = length(var.security_group_ids) > 0 ? var.security_group_ids : try([data.aws_security_group.eks_cluster[0].id], [])
 }
 
 # Find the EKS Load Balancer (ALB) by Tag

@@ -30,7 +30,7 @@ module "api_gateway" {
   name                      = var.name
   vpc_id                    = local.vpc_id
   subnet_ids                = local.subnet_ids
-  security_group_ids        = [local.security_group_ids]
+  security_group_ids        = local.security_group_ids
   lb_listener_arn           = local.lb_listener_arn
   lab_role_arn              = local.lab_role_arn
   # authentication_lambda_arn = local.authentication_lambda_arn
