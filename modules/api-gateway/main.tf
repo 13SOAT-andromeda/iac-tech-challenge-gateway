@@ -60,7 +60,7 @@ resource "aws_apigatewayv2_integration" "authentication" {
   api_id                 = aws_apigatewayv2_api.this.id
   integration_type       = "AWS_PROXY"
   integration_uri        = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${var.authentication_lambda_arn}/invocations"
-  payload_format_version = "1.0"
+  payload_format_version = "2.0"
 }
 
 # 2. Private Routes -> ALB via VPC Link
