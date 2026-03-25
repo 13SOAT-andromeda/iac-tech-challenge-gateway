@@ -61,6 +61,7 @@ module "api_gateway" {
   source                    = "../modules/api-gateway"
   name                      = "tech-challenge-api-local"
   vpc_id                    = data.aws_vpc.selected.id
+  vpc_cidr                  = data.aws_vpc.selected.cidr_block
   subnet_ids                = data.aws_subnets.private.ids
   security_group_ids        = [data.aws_security_group.eks_cluster.id]
   lb_listener_arn           = "arn:aws:elasticloadbalancing:us-east-1:000000000000:loadbalancer/net/mock-lb/1234567890abcdef"

@@ -9,6 +9,11 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "vpc_cidr" {
+  description = "CIDR block of the VPC (used for VPC Link security group egress)"
+  type        = string
+}
+
 variable "subnet_ids" {
   description = "List of subnet IDs for the VPC Link"
   type        = list(string)

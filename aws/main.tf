@@ -29,6 +29,7 @@ module "api_gateway" {
   source                    = "../modules/api-gateway"
   name                      = var.name
   vpc_id                    = local.vpc_id
+  vpc_cidr                  = local.vpc_cidr
   subnet_ids                = local.subnet_ids
   security_group_ids        = local.security_group_ids
   lb_listener_arn           = local.lb_listener_arn

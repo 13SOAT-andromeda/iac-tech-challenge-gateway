@@ -8,7 +8,8 @@ data "aws_vpc" "selected" {
 }
 
 locals {
-  vpc_id = var.vpc_id != "" ? var.vpc_id : try(data.aws_vpc.selected[0].id, "")
+  vpc_id   = var.vpc_id != "" ? var.vpc_id : try(data.aws_vpc.selected[0].id, "")
+  vpc_cidr = try(data.aws_vpc.selected[0].cidr_block, "10.0.0.0/16")
 }
 
 # Find subnets for VPC Link

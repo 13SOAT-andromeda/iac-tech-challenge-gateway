@@ -35,9 +35,27 @@ resource "aws_cloudwatch_log_group" "api_gw" {
 
 # --- VPC Link for ALB Integration ---
 
+resource "aws_security_group" "vpc_link" {
+  name        = "${var.name}-vpc-link-sg"
+  description = "Security group for API Gateway VPC Link"
+  vpc_id      = var.vpc_id
+
+  egress {
+    description = "Permite trafego ao ALB interno na VPC"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  tags = {
+    Name = "${var.name}-vpc-link-sg"
+  }
+}
+
 resource "aws_apigatewayv2_vpc_link" "this" {
   name               = "${var.name}-vpc-link"
-  security_group_ids = var.security_group_ids
+  security_group_ids = [aws_security_group.vpc_link.id]
   subnet_ids         = var.subnet_ids
 }
 
