@@ -1,57 +1,69 @@
 # IaC Tech Challenge - API Gateway
 
-Infrastructure as Code (IaC) for setting up the API Gateway layer, supporting both standard AWS environments and local development via LocalStack. This component provides the entry point for the Tech Challenge microservices, including VPC Link integration and Lambda-based authorization.
+Este repositório contém a infraestrutura como código (IaC) para o provisionamento da camada de API Gateway do projeto Tech Challenge. Ele atua como o ponto de entrada único para os microserviços, gerenciando autenticação, autorização e o roteamento de tráfego para os recursos internos da VPC através de um VPC Link.
 
-## Project Structure
+## 🛠️ Tecnologias Utilizadas
 
-- `modules/`: Reusable Terraform modules.
-  - `api-gateway/`: Configures the HTTP API Gateway, VPC Link, Lambda Authorizers, and routes.
-- `aws/`: Root configuration for deploying to a real AWS environment (configured for AWS Academy/Lab roles).
-- `localstack/`: Root configuration for local testing using LocalStack.
+*   **Terraform:** Orquestração e provisionamento da infraestrutura.
+*   **AWS API Gateway v2 (HTTP API):** Gerenciamento de APIs de baixo custo e alta performance.
+*   **AWS Lambda:** Integrações para autenticação e autorização customizada.
+*   **LocalStack:** Emulação de serviços AWS para desenvolvimento e testes locais.
+*   **AWS VPC Link:** Conexão segura entre o API Gateway e recursos privados (ALB).
 
-## Architecture Highlights
+## 🚀 Passos para Execução e Deploy
 
-- **HTTP API Gateway:** Lightweight and cost-effective API management.
-- **VPC Link:** Securely connects the API Gateway to private resources (like ALB) within the VPC.
-- **Lambda Authorizer:** Custom request-based authorization using an external Lambda function.
-- **Microservices Integration:** Proxies requests to internal services via VPC Link or direct Lambda integrations (e.g., `/login`).
+### Pré-requisitos
 
-## Prerequisites
+*   Terraform (v1.0+) instalado.
+*   AWS CLI configurado.
+*   LocalStack instalado (para execução local).
+*   [tflocal](https://github.com/localstack/terraform-local) instalado (recomendado para LocalStack).
 
-- [Terraform](https://www.terraform.io/downloads.html) (v1.0+)
-- [LocalStack](https://localstack.cloud/) (for local development)
-- [AWS CLI](https://aws.amazon.com/cli/)
-- [tflocal](https://github.com/localstack/terraform-local) (optional, for LocalStack convenience)
+### Execução Local (via LocalStack)
 
-## Getting Started
+1.  Inicie o LocalStack em segundo plano:
+    ```bash
+    localstack start -d
+    ```
+2.  Navegue até o diretório `localstack`:
+    ```bash
+    cd localstack
+    ```
+3.  Inicialize o Terraform:
+    ```bash
+    tflocal init
+    ```
+4.  Aplique o plano de infraestrutura:
+    ```bash
+    tflocal apply
+    ```
 
-### Local Development (LocalStack)
+### Deploy Real na AWS
 
-1. Start LocalStack:
-   ```bash
-   localstack start -d
-   ```
+1.  Certifique-se de que suas credenciais da AWS estejam configuradas (ex: via AWS Academy).
+2.  Navegue até o diretório `aws`:
+    ```bash
+    cd aws
+    ```
+3.  Inicialize o Terraform (configurado com backend S3 para o estado):
+    ```bash
+    terraform init
+    ```
+4.  Revise as alterações planejadas:
+    ```bash
+    terraform plan
+    ```
+5.  Aplique o deploy na AWS:
+    ```bash
+    terraform apply
+    ```
 
-2. Initialize and apply:
-   ```bash
-   cd localstack
-   tflocal init
-   tflocal apply
-   ```
+> **Nota:** O provisionamento na AWS depende de recursos pré-existentes (VPC, Subnets e Lambdas de Autenticação) que são identificados automaticamente via `data sources` com a tag `Project: tech-challenge`.
 
-### AWS Deployment
+## 📐 Diagrama da Arquitetura
 
-1. Ensure your AWS credentials are configured (e.g., via AWS Academy CLI session).
-2. Initialize and apply:
-   ```bash
-   cd aws
-   terraform init
-   terraform apply
-   ```
+![Arquitetura da Infraestrutura](.github/misc/gateway-architecture.png)
 
-## Configuration
+## 📡 APIs (Swagger/Postman)
 
-The infrastructure expects several pre-existing resources (VPC, Subnets, Lambdas) which are typically fetched via `data` sources:
-- **VPC & Subnets:** Labeled with `Project: tech-challenge`.
-- **Auth Lambdas:** `tech-challenge-auth` and `tech-challenge-authorizer`.
-- **IAM Role:** Uses `LabRole` for AWS deployments and `eks-local-role` for LocalStack.
+*(em branco)*
