@@ -60,3 +60,15 @@ jobs:
       
       - name: Terraform Apply
         run: terraform apply -auto-approve
+
+      - name: Atualizar credenciais no Load Balancer Controller
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+          kubectl set env deployment/aws-load-balancer-controller \
+            -n kube-system \
+            AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            AWS_SESSION_TOKEN="${{ secrets.AWS_SESSION_TOKEN }}" \
+            AWS_REGION="${{ secrets.AWS_REGION }}"
+          kubectl rollout restart deployment/aws-load-balancer-controller -n kube-system
+          kubectl rollout status deployment/aws-load-balancer-controller -n kube-system

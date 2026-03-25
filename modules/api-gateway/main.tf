@@ -97,6 +97,10 @@ resource "aws_apigatewayv2_integration" "backend" {
   integration_method = "ANY"
   connection_type    = "VPC_LINK"
   connection_id      = aws_apigatewayv2_vpc_link.this.id
+
+  request_parameters = {
+    "overwrite:path" = "$request.path"
+  }
 }
 
 # --- Routes ---
