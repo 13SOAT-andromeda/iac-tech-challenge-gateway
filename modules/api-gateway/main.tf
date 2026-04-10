@@ -41,11 +41,11 @@ resource "aws_security_group" "vpc_link" {
   vpc_id      = var.vpc_id
 
   egress {
-    description = "Permite trafego ao ALB interno na VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
+    description = "Permite trafego de saida total para evitar bloqueios de rede"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -69,6 +69,7 @@ resource "aws_apigatewayv2_authorizer" "this" {
   identity_sources                  = ["$request.header.Authorization"]
   authorizer_payload_format_version = "2.0"
   enable_simple_responses           = true
+  authorizer_result_ttl_in_seconds  = 0
 }
 
 # --- Integrations ---
@@ -159,13 +160,5 @@ resource "aws_lambda_permission" "authorizer" {
   action        = "lambda:InvokeFunction"
   function_name = var.authorizer_lambda_arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "authorizer_invocation" {
-  statement_id  = "AllowAPIGatewayInvokeAuthorizerMetadata"
-  action        = "lambda:InvokeFunction"
-  function_name = var.authorizer_lambda_arn
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.this.id}"
+  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*"
 }
