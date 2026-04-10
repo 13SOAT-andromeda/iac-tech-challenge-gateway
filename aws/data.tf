@@ -67,7 +67,6 @@ data "aws_lb_listener" "eks_lb_listener" {
 
 locals {
   lb_listener_arn = var.lb_listener_arn != "" ? var.lb_listener_arn : try(data.aws_lb_listener.eks_lb_listener[0].arn, "")
-  lb_dns_name     = try(data.aws_lb.eks_alb[0].dns_name, "")
 }
 
 # Find IAM Role for AWS Academy

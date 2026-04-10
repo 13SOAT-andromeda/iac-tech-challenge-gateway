@@ -29,11 +29,6 @@ variable "lb_listener_arn" {
   type        = string
 }
 
-variable "lb_dns_name" {
-  description = "DNS name of the EKS Load Balancer"
-  type        = string
-}
-
 variable "lab_role_arn" {
   description = "ARN of the IAM LabRole"
   type        = string

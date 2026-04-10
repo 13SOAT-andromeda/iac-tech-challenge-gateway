@@ -69,6 +69,10 @@ resource "aws_apigatewayv2_authorizer" "this" {
   identity_sources                  = ["$request.header.Authorization"]
   authorizer_payload_format_version = "2.0"
   enable_simple_responses           = true
+  
+  # TTL do cache de autorização (em segundos). 
+  # - Defina como 0 durante o desenvolvimento/debug para garantir que o Lambda seja chamado em cada requisição.
+  # - Em produção, utilize o padrão (ex: 300) para reduzir latência e custos de invocação do Lambda.
   authorizer_result_ttl_in_seconds  = 0
 }
 
