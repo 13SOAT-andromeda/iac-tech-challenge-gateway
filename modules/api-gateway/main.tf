@@ -161,3 +161,11 @@ resource "aws_lambda_permission" "authorizer" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/*"
 }
+
+resource "aws_lambda_permission" "authorizer_invocation" {
+  statement_id  = "AllowAPIGatewayInvokeAuthorizerMetadata"
+  action        = "lambda:InvokeFunction"
+  function_name = var.authorizer_lambda_arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.this.id}"
+}
