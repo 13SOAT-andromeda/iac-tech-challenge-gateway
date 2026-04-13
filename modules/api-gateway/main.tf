@@ -1,5 +1,3 @@
-# --- HTTP API Gateway ---
-
 resource "aws_apigatewayv2_api" "this" {
   name          = var.name
   protocol_type = "HTTP"
@@ -33,8 +31,6 @@ resource "aws_cloudwatch_log_group" "api_gw" {
   retention_in_days = 7
 }
 
-# --- VPC Link for ALB Integration ---
-
 resource "aws_security_group" "vpc_link" {
   name        = "${var.name}-vpc-link-sg"
   description = "Security group for API Gateway VPC Link"
@@ -59,8 +55,6 @@ resource "aws_apigatewayv2_vpc_link" "this" {
   subnet_ids         = var.subnet_ids
 }
 
-# --- Authorizer: Lambda Token Authorizer ---
-
 resource "aws_apigatewayv2_authorizer" "this" {
   api_id                            = aws_apigatewayv2_api.this.id
   authorizer_type                   = "REQUEST"
@@ -76,9 +70,6 @@ resource "aws_apigatewayv2_authorizer" "this" {
   authorizer_result_ttl_in_seconds  = 0
 }
 
-# --- Integrations ---
-
-# 1. Authentication Lambda (sessions)
 resource "aws_apigatewayv2_integration" "authentication" {
   api_id                 = aws_apigatewayv2_api.this.id
   integration_type       = "AWS_PROXY"
@@ -86,7 +77,6 @@ resource "aws_apigatewayv2_integration" "authentication" {
   payload_format_version = "2.0"
 }
 
-# 2. Authorizer Lambda (authorize endpoint)
 resource "aws_apigatewayv2_integration" "authorizer" {
   api_id                 = aws_apigatewayv2_api.this.id
   integration_type       = "AWS_PROXY"
@@ -94,7 +84,6 @@ resource "aws_apigatewayv2_integration" "authorizer" {
   payload_format_version = "2.0"
 }
 
-# 3. Private Routes -> ALB via VPC Link
 resource "aws_apigatewayv2_integration" "backend" {
   api_id             = aws_apigatewayv2_api.this.id
   integration_type   = "HTTP_PROXY"
@@ -108,7 +97,7 @@ resource "aws_apigatewayv2_integration" "backend" {
   }
 }
 
-# --- Routes ---
+# Routes da API Gateway
 
 # Rotas públicas da Lambda de autenticação (sem authorizer)
 # Rotas mais específicas têm precedência sobre ANY /api/{proxy+}
@@ -148,8 +137,6 @@ resource "aws_apigatewayv2_route" "private" {
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.this.id
 }
-
-# --- Lambda Permission ---
 
 resource "aws_lambda_permission" "authentication" {
   statement_id  = "AllowAPIGatewayInvokeAuthentication"

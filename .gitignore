@@ -14,3 +14,11 @@ env/
 terraform.tfvars
 terraform.tfvars.json
 *.tfplan
+
+# local development
+.aws-sam
+
+# Agents
+condutor/
+openspec/
+.claude/
