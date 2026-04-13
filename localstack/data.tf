@@ -1,4 +1,3 @@
-# Find the VPC by its Name tag in LocalStack
 data "aws_vpc" "selected" {
   filter {
     name   = "tag:Name"
@@ -6,7 +5,6 @@ data "aws_vpc" "selected" {
   }
 }
 
-# Find subnets for VPC Link
 data "aws_subnets" "private" {
   filter {
     name   = "vpc-id"
@@ -18,7 +16,6 @@ data "aws_subnets" "private" {
   }
 }
 
-# Find the EKS Security Group
 data "aws_security_group" "eks_cluster" {
   filter {
     name   = "vpc-id"
@@ -30,7 +27,6 @@ data "aws_security_group" "eks_cluster" {
   }
 }
 
-# Find Lambda functions
 data "aws_lambda_function" "authentication" {
   function_name = "tech-challenge-user-authentication"
 }
