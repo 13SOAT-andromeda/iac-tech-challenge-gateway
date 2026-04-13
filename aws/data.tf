@@ -1,4 +1,3 @@
-# Find the VPC by its Name tag
 data "aws_vpc" "selected" {
   count = var.vpc_id == "" ? 1 : 0
   filter {
@@ -12,7 +11,6 @@ locals {
   vpc_cidr = try(data.aws_vpc.selected[0].cidr_block, "10.0.0.0/16")
 }
 
-# Find subnets for VPC Link
 data "aws_subnets" "private" {
   count = length(var.subnet_ids) == 0 ? 1 : 0
   filter {
@@ -29,14 +27,12 @@ locals {
   subnet_ids = length(var.subnet_ids) > 0 ? var.subnet_ids : try(data.aws_subnets.private[0].ids, [])
 }
 
-# Find the EKS Security Group
 data "aws_security_group" "eks_cluster" {
   count = length(var.security_group_ids) == 0 ? 1 : 0
   filter {
     name   = "vpc-id"
     values = [local.vpc_id]
   }
-  # Discovery using cluster name tag which is consistent in EKS
   filter {
     name   = "tag:aws:eks:cluster-name"
     values = [var.cluster_tag_name]
@@ -44,13 +40,9 @@ data "aws_security_group" "eks_cluster" {
 }
 
 locals {
-  # We try to use the provided variable, or the discovered security group ID
-  # Filtering for non-empty and non-"None" values to ensure robustness
   security_group_ids = [for s in (length(var.security_group_ids) > 0 ? var.security_group_ids : try([data.aws_security_group.eks_cluster[0].id], [])) : s if s != "None" && s != ""]
 }
 
-# Find the EKS Load Balancer (ALB) by Tag
-# We use tags because the full name can exceed the 32-character limit of the 'name' attribute
 data "aws_lb" "eks_alb" {
   count = var.lb_listener_arn == "" ? 1 : 0
   tags = {
@@ -58,7 +50,6 @@ data "aws_lb" "eks_alb" {
   }
 }
 
-# Find the ALB Listener
 data "aws_lb_listener" "eks_lb_listener" {
   count             = var.lb_listener_arn == "" ? 1 : 0
   load_balancer_arn = try(data.aws_lb.eks_alb[0].arn, "")
@@ -69,7 +60,6 @@ locals {
   lb_listener_arn = var.lb_listener_arn != "" ? var.lb_listener_arn : try(data.aws_lb_listener.eks_lb_listener[0].arn, "")
 }
 
-# Find IAM Role for AWS Academy
 data "aws_iam_role" "lab_role" {
   count = var.lab_role_arn == "" ? 1 : 0
   name  = "LabRole"
@@ -79,7 +69,6 @@ locals {
   lab_role_arn = var.lab_role_arn != "" ? var.lab_role_arn : try(data.aws_iam_role.lab_role[0].arn, "")
 }
 
-# Find Lambda functions
 data "aws_lambda_function" "authentication" {
   count         = var.authentication_lambda_arn == "" ? 1 : 0
   function_name = "tech-challenge-user-authentication"
