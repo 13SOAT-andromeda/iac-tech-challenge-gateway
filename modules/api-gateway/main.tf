@@ -97,6 +97,27 @@ resource "aws_apigatewayv2_integration" "backend" {
   }
 }
 
+resource "aws_apigatewayv2_integration" "catalog" {
+  api_id             = aws_apigatewayv2_api.this.id
+  integration_type   = "HTTP_PROXY"
+  integration_uri    = var.lb_listener_arn
+  integration_method = "ANY"
+  connection_type    = "VPC_LINK"
+  connection_id      = aws_apigatewayv2_vpc_link.this.id
+
+  request_parameters = {
+    "overwrite:path" = "/$request.path.proxy"
+  }
+}
+
+resource "aws_apigatewayv2_route" "catalog" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "ANY /api/catalog/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.catalog.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.this.id
+}
+
 # Routes da API Gateway
 
 # Rotas públicas da Lambda de autenticação (sem authorizer)
