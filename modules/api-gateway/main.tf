@@ -103,36 +103,56 @@ resource "aws_apigatewayv2_integration" "backend" {
 # Rotas mais específicas têm precedência sobre ANY /api/{proxy+}
 resource "aws_apigatewayv2_route" "sessions_login" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "POST /api/sessions"
+  route_key          = "POST /v1/sessions"
   target             = "integrations/${aws_apigatewayv2_integration.authentication.id}"
   authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "sessions_refresh" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "POST /api/sessions/refresh"
+  route_key          = "POST /v1/sessions/refresh"
   target             = "integrations/${aws_apigatewayv2_integration.authentication.id}"
   authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "sessions_logout" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "DELETE /api/sessions/logout"
+  route_key          = "DELETE /v1/sessions/logout"
   target             = "integrations/${aws_apigatewayv2_integration.authentication.id}"
   authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "authorize" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "ANY /api/authorize"
+  route_key          = "ANY /v1/authorize"
   target             = "integrations/${aws_apigatewayv2_integration.authorizer.id}"
   authorization_type = "NONE"
-  authorizer_id      = aws_apigatewayv2_authorizer.this.id
+}
+
+resource "aws_apigatewayv2_route" "orders_approve" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "GET /v1/orders/{orderId}/approve"
+  target             = "integrations/${aws_apigatewayv2_integration.backend.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "orders_reject" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "GET /v1/orders/{orderId}/reject"
+  target             = "integrations/${aws_apigatewayv2_integration.backend.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "payments_webhook" {
+  api_id             = aws_apigatewayv2_api.this.id
+  route_key          = "POST /v1/payments/webhooks/mercadopago"
+  target             = "integrations/${aws_apigatewayv2_integration.backend.id}"
+  authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "private" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "ANY /api/{proxy+}"
+  route_key          = "ANY /v1/{proxy+}"
   target             = "integrations/${aws_apigatewayv2_integration.backend.id}"
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.this.id
