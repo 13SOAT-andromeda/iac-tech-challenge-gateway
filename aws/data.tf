@@ -46,7 +46,7 @@ locals {
 data "aws_lb" "eks_alb" {
   count = var.lb_listener_arn == "" ? 1 : 0
   tags = {
-    "kubernetes.io/cluster/${var.cluster_tag_name}" = "owned"
+    "ingress.k8s.aws/stack" = "default/tech-challenge-ingress"
   }
 }
 
