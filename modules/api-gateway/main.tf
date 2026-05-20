@@ -93,7 +93,10 @@ resource "aws_apigatewayv2_integration" "backend" {
   connection_id      = aws_apigatewayv2_vpc_link.this.id
 
   request_parameters = {
-    "overwrite:path" = "$request.path"
+    "overwrite:path"                 = "$request.path"
+    "overwrite:header.X-User-ID"    = "$context.authorizer.userId"
+    "overwrite:header.X-User-Email" = "$context.authorizer.userEmail"
+    "overwrite:header.X-User-Role"  = "$context.authorizer.userRole"
   }
 }
 
