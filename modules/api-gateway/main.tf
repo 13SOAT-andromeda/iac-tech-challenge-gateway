@@ -131,14 +131,14 @@ resource "aws_apigatewayv2_route" "authorize" {
 
 resource "aws_apigatewayv2_route" "orders_approve" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "GET /v1/orders/{orderId}/approve"
+  route_key          = "POST /v1/orders/{orderId}/approve"
   target             = "integrations/${aws_apigatewayv2_integration.backend.id}"
   authorization_type = "NONE"
 }
 
 resource "aws_apigatewayv2_route" "orders_reject" {
   api_id             = aws_apigatewayv2_api.this.id
-  route_key          = "GET /v1/orders/{orderId}/reject"
+  route_key          = "POST /v1/orders/{orderId}/reject"
   target             = "integrations/${aws_apigatewayv2_integration.backend.id}"
   authorization_type = "NONE"
 }
